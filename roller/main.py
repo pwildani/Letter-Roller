@@ -1,7 +1,8 @@
 import pygame
-
+import itertools
 import pygameui
 import events
+import board
 
 try:
     import android
@@ -25,16 +26,16 @@ def main():
   boardui = pygameui.PyGameBoardUI(mainsurface, game, 1)
 
   while True:
-    boardui.draw()
     if android and android.check_pause():
       android.wait_for_resume()
 
     # TODO pause for events rather than busywaiting
-    for event in pygame.event.get():
+    for event in itertools.chain([pygame.event.wait()], pygame.event.get()):
       events.EVENTS[event.type](board, event)
 
+    boardui.draw()
     pygame.display.update()
-    clock.tick(pygameui.FPS)
+    clock.tick(pygameui.MAX_FPS)
 
 
 if __name__ == '__main__':
