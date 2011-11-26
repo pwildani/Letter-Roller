@@ -1,0 +1,5 @@
+title=Letter Roller
+author=Wildani
+api=1
+orientation=portrait
+
