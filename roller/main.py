@@ -1,6 +1,4 @@
 import pygame
-import sys
-import string
 
 import pygameui
 import events
@@ -9,28 +7,6 @@ try:
     import android
 except ImportError:
     android = None
-
-
-class Board:
-  def __init__(self, rows, cols):
-    self.rows = rows
-    self.cols = cols
-
-  def letterAt(self, row, col):
-    # TODO real code
-    return string.letters[row + col * self.cols].upper()
-
-
-class TermBoardUI:
-   def __init__(self, board):
-     self.board = board
-
-   def draw(self):
-     for r in range(self.board.rows):
-       print
-       for c in range(self.board.cols):
-         print self.board.letterAt(r, c),
-     print
 
 events.KEYDOWN.handler(pygame.K_ESCAPE)(events.handleQuit)
 
@@ -45,8 +21,8 @@ def main():
       (pygameui.WINDOWWIDTH, pygameui.WINDOWHEIGHT))
   pygame.display.set_caption('Letter Roller')
 
-  board = Board(5, 5)
-  boardui = pygameui.PyGameBoardUI(mainsurface, board, 1)
+  game = board.Board(5, 5)
+  boardui = pygameui.PyGameBoardUI(mainsurface, game, 1)
 
   while True:
     boardui.draw()
