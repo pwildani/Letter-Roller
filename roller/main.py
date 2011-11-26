@@ -23,7 +23,8 @@ def main():
   pygame.display.set_caption('Letter Roller')
 
   game = board.Board(5, 5)
-  boardui = pygameui.PyGameBoardUI(mainsurface, game, 1)
+  theme = pygameui.GarishTheme()
+  boardui = pygameui.PyGameBoardUI(mainsurface, game, theme)
 
   while True:
     if android and android.check_pause():

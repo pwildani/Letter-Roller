@@ -14,81 +14,41 @@ BLUE = (0, 153, 153)
 GREEN = (0, 204, 0)
 RED = (255, 0, 0)
 
-BGCOLOR = BLUE
-TILECOLOR = GREEN
-TILEBORDERCOLOR = RED
-TEXTCOLOR = WHITE
-BORDERCOLOR = LIGHTCYAN
+class Theme:
+  ROUNDING = 8
 
-BUTTONCOLOR = WHITE
-BUTTONTEXTCOLOR = BLACK
-MESSAGECOLOR = WHITE
+  @property
+  def xmargin(self):
+    return self.GAP + self.BORDERSIZE + self.GAP
 
+  @property
+  def ymargin(self):
+    return self.GAP + self.BORDERSIZE + self.GAP
 
-class PyGameBoardUI:
-  def __init__(self, surface, board, gap):
-    self.surface = surface
-    self.board = board
-    self.rows = board.rows
-    self.cols = board.cols
-
-    rect = surface.get_rect()
-    self.width = rect.width
-    self.height = rect.height
-
-    self.bordersize = 3
-    self.gap = gap
-    self.xmargin = gap + self.bordersize + gap
-    self.ymargin = gap + self.bordersize + gap
-
-
-    totaltilewidth = self.width - gap * (self.cols + 1) - self.bordersize * 2
-    fitwidth = totaltilewidth / self.cols
-
-    totaltileheight = self.height - gap * (self.rows + 1) - self.bordersize * 2
-    fitheight = totaltileheight / self.rows
-
-    self.innertile = min(fitwidth, fitheight)
-    self.outertile = self.innertile + gap
-
-    self.fontsize = self.innertile * 2 / 3
-    self.font = pygame.font.Font('freesansbold.ttf', self.fontsize)
-
-  def getTopLeftOfTile(self, row, col):
-    left = self.xmargin + col * self.outertile
-    top = self.ymargin + row * self.outertile
+  def getTopLeftOfTile(self, tilesize, row, col):
+    left = self.xmargin + col * tilesize 
+    top = self.ymargin + row * tilesize
     return top, left
 
-  def draw(self):
-    self.surface.fill(BGCOLOR)
+  def fitTiles(self, num, pixels):
+    return (pixels - self.GAP * (num + 1) - self.BORDERSIZE * 2) / num
 
-    # Render the letters
-    for r in range(self.rows):
-      for c in range(self.cols):
-        self.drawCell(r, c, self.board.letterAt(r, c))
+  def drawEmptyCell(self, surface, top, left, tilesize):
+    self.roundrect(surface, self.TILECOLOR,
+       (left, top, tilesize, tilesize),
+       0, self.ROUNDING, self.ROUNDING )
+    self.roundrect(surface, self.TILEBORDERCOLOR,
+       (left, top, tilesize, tilesize),
+       1, self.ROUNDING, self.ROUNDING)
 
-    # Render a box around the letters
-    width = self.cols * self.outertile + self.gap + self.bordersize
-    height = self.rows * self.outertile + self.gap + self.bordersize
-    pygame.draw.rect(self.surface, BORDERCOLOR,  (
-        self.bordersize, self.bordersize - self.gap,
-        width, height),
-      self.bordersize)
-
-  def drawCell(self, row, col, label):
-    top, left = self.getTopLeftOfTile(row, col)
-    rounding = 8
-    self.roundrect(self.surface, TILECOLOR,
-       (left, top, self.innertile, self.innertile),
-       0, rounding, rounding )
-    self.roundrect(self.surface, TILEBORDERCOLOR,
-       (left, top, self.innertile, self.innertile),
-       1, rounding, rounding)
-    
-    text = self.font.render(label, True, TEXTCOLOR)
+  def drawCell(self, surface, font, tilesize, row, col, label):
+    outersize = tilesize + self.GAP
+    top, left = self.getTopLeftOfTile(outersize, row, col)
+    self.drawEmptyCell(surface, top, left, tilesize)
+    text = font.render(label, True, self.TEXTCOLOR)
     rect = text.get_rect()
-    rect.center = left + (self.outertile / 2), top + (self.outertile / 2)
-    self.surface.blit(text, rect)
+    rect.center = left + (outersize / 2), top + (outersize / 2)
+    surface.blit(text, rect)
 
   def roundrect(self, surface, color, rect, width, xr, yr):
     clip = surface.get_clip()
@@ -124,3 +84,65 @@ class PyGameBoardUI:
     pygame.draw.ellipse(surface, color, pygame.Rect(rect.left, rect.bottom - 2 * yr, 2 * xr, 2 * yr), width)
 
     surface.set_clip(clip)
+
+  def tilePixels(self, num, tilesize):
+   return num * (tilesize + self.GAP) + self.GAP + self.BORDERSIZE
+
+  def drawBorder(self, surface, rows, cols, tilesize):
+    if self.BORDERSIZE:
+      width = self.tilePixels(cols, tilesize)
+      height = self.tilePixels(rows, tilesize)
+      pygame.draw.rect(surface, self.BORDERCOLOR,  (
+	  self.BORDERSIZE, self.BORDERSIZE - self.GAP,
+	  width, height),
+	self.BORDERSIZE)
+
+class GarishTheme(Theme):
+  GAP = 1
+  BORDERSIZE = 3
+
+  BGCOLOR = BLUE
+  TILECOLOR = GREEN
+  TILEBORDERCOLOR = RED
+  TEXTCOLOR = WHITE
+  BORDERCOLOR = LIGHTCYAN
+
+  BUTTONCOLOR = WHITE
+  BUTTONTEXTCOLOR = BLACK
+  MESSAGECOLOR = WHITE
+  FONTFILE = 'freesansbold.ttf'
+  FONTRATIO = 2.0 / 3
+
+
+class PyGameBoardUI:
+  def __init__(self, surface, board, theme):
+    self.surface = surface
+    self.board = board
+    self.rows = board.rows
+    self.cols = board.cols
+    self.theme = theme
+
+    rect = surface.get_rect()
+    self.width = rect.width
+    self.height = rect.height
+
+    self.bordersize = 3
+
+    self.tilesize = min(theme.fitTiles(self.rows, self.height),
+                        theme.fitTiles(self.cols, self.width))
+
+    self.fontsize = int(self.tilesize * theme.FONTRATIO)
+    self.font = pygame.font.Font(theme.FONTFILE, self.fontsize)
+
+
+  def draw(self, theme=None):
+    theme = theme or self.theme
+    self.surface.fill(theme.BGCOLOR)
+
+    # Render the letters
+    for r in range(self.rows):
+      for c in range(self.cols):
+        theme.drawCell(self.surface, self.font, self.tilesize, r, c, self.board.letterAt(r, c))
+
+    # Render a box around the letters
+    theme.drawBorder(self.surface, self.rows, self.cols, self.tilesize)
