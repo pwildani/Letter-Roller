@@ -77,15 +77,50 @@ class PyGameBoardUI:
 
   def drawCell(self, row, col, label):
     top, left = self.getTopLeftOfTile(row, col)
-    pygame.draw.rect(self.surface, TILECOLOR,
-       (left, top, self.innertile, self.innertile))
-    pygame.draw.rect(self.surface, TILEBORDERCOLOR,
-       (left, top, self.innertile, self.innertile), 1)
+    rounding = 8
+    self.roundrect(self.surface, TILECOLOR,
+       (left, top, self.innertile, self.innertile),
+       0, rounding, rounding )
+    self.roundrect(self.surface, TILEBORDERCOLOR,
+       (left, top, self.innertile, self.innertile),
+       1, rounding, rounding)
     
     text = self.font.render(label, True, TEXTCOLOR)
     rect = text.get_rect()
     rect.center = left + (self.outertile / 2), top + (self.outertile / 2)
     self.surface.blit(text, rect)
 
+  def roundrect(self, surface, color, rect, width, xr, yr):
+    clip = surface.get_clip()
+    if not isinstance(rect, pygame.Rect):
+      rect = pygame.Rect(rect)
+    xr = min(xr, rect.width / 2)
+    yr = min(yr, rect.height / 2)
 
+    # Uses clipping and rect/ellipse instead of line and arc so that we can
+    # draw solid shapes with the same logic.
+    
+    # Draw the center cross.
+    surface.set_clip(clip.clip(rect.inflate(0, -yr * 2)))
+    pygame.draw.rect(surface, color, rect.inflate(1 - width,0), width)
+    # TODO fix the wasted overdraw.
+    surface.set_clip(clip.clip(rect.inflate(-xr * 2, 0)))
+    pygame.draw.rect(surface, color, rect.inflate(0,1 - width), width)
 
+    # Top left corner.
+    surface.set_clip(clip.clip(rect.left, rect.top, xr, yr))
+    pygame.draw.ellipse(surface, color, pygame.Rect(rect.left, rect.top, 2 * xr, 2 * yr), width)
+
+    # Bottom right corner.
+    surface.set_clip(clip.clip(rect.right - xr, rect.bottom - yr, xr, yr))
+    pygame.draw.ellipse(surface, color, pygame.Rect(rect.right - 2 * xr, rect.bottom - 2 * yr, 2 * xr, 2 * yr), width)
+
+    # Top right corner.
+    surface.set_clip(clip.clip(rect.right - xr, rect.top, xr, yr))
+    pygame.draw.ellipse(surface, color, pygame.Rect(rect.right - 2 * xr, rect.top, 2 * xr, 2 * yr), width)
+
+    # Bottom left corner.
+    surface.set_clip(clip.clip(rect.left, rect.bottom - yr, xr, yr))
+    pygame.draw.ellipse(surface, color, pygame.Rect(rect.left, rect.bottom - 2 * yr, 2 * xr, 2 * yr), width)
+
+    surface.set_clip(clip)
