@@ -1,17 +1,4 @@
-import itertools
 import pygame
-import random
-import sys
-import time
-import string
-
-# Abbreviate UI constants.
-from pygame.locals import *
-
-try:
-    import android
-except ImportError:
-    android = None
 
 # TODO adapt to the device
 WINDOWWIDTH = 480
@@ -36,28 +23,6 @@ BUTTONTEXTCOLOR = BLACK
 MESSAGECOLOR = WHITE
 
 
-class Board:
-  def __init__(self, rows, cols):
-    self.rows = rows
-    self.cols = cols
-
-  def letterAt(self, row, col):
-    # TODO real code
-    return string.letters[row + col * self.cols].upper()
-
-
-class TermBoardUI:
-   def __init__(self, board):
-     self.board = board
-
-   def draw(self):
-     for r in range(self.board.rows):
-       print
-       for c in range(self.board.cols):
-         print self.board.letterAt(r, c),
-     print
-
-
 class PyGameBoardUI:
   def __init__(self, surface, board, gap):
     self.surface = surface
@@ -68,7 +33,6 @@ class PyGameBoardUI:
     rect = surface.get_rect()
     self.width = rect.width
     self.height = rect.height
-
 
     self.bordersize = 3
     self.gap = gap
@@ -113,45 +77,3 @@ class PyGameBoardUI:
     top = self.ymargin + row * (self.tilesize + self.gap - 1)
     return top, left
 
-
-def shutdown():
-  pygame.quit()
-  sys.exit()
-
-
-def main():
-  pygame.init()
-  if android:
-    android.init()
-    android.map_key(android.KEYCODE_BACK, pygame.K_ESCAPE)
-
-  clock = pygame.time.Clock()
-  mainsurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
-  pygame.display.set_caption('Letter Roller')
-
-  board = Board(5, 5)
-  if android:
-    boardui = PyGameBoardUI(mainsurface, board, 1)
-  else:
-    boardui = TermBoardUI(board)
-
-  boardui = PyGameBoardUI(mainsurface, board, 1)
-
-  while True:
-    boardui.draw()
-    if android and android.check_pause():
-      android.wait_for_resume()
-
-    # TODO pause for events rather than busywaiting
-    for event in pygame.event.get():
-      if event.type == QUIT:
-         shutdown()
-      elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-         shutdown()
-
-    pygame.display.update()
-    clock.tick(FPS)
-
-
-if __name__ == '__main__':
-  main()

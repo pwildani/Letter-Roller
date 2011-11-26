@@ -1,66 +1,65 @@
 import pygame
+import sys
+import string
 
-# Import the android module. If we can't import it, set it to None - this
-# lets us test it, and check to see if we want android-specific behavior.
+import pygameui
+import events
+
 try:
     import android
 except ImportError:
     android = None
 
-# Event constant.
-TIMEREVENT = pygame.USEREVENT
 
-# The FPS the game runs at.
-FPS = 30
+class Board:
+  def __init__(self, rows, cols):
+    self.rows = rows
+    self.cols = cols
 
-# Color constants.
-RED = (255, 0, 0, 255)
-GREEN = (0, 255, 0, 255)
+  def letterAt(self, row, col):
+    # TODO real code
+    return string.letters[row + col * self.cols].upper()
+
+
+class TermBoardUI:
+   def __init__(self, board):
+     self.board = board
+
+   def draw(self):
+     for r in range(self.board.rows):
+       print
+       for c in range(self.board.cols):
+         print self.board.letterAt(r, c),
+     print
+
+events.KEYDOWN.handler(pygame.K_ESCAPE)(events.handleQuit)
 
 def main():
-    pygame.init()
+  pygame.init()
+  if android:
+    android.init()
+    android.map_key(android.KEYCODE_BACK, pygame.K_ESCAPE)
 
-    # Set the screen size.
-    screen = pygame.display.set_mode((480, 800))
+  clock = pygame.time.Clock()
+  mainsurface = pygame.display.set_mode(
+      (pygameui.WINDOWWIDTH, pygameui.WINDOWHEIGHT))
+  pygame.display.set_caption('Letter Roller')
 
-    # Map the back button to the escape key.
-    if android:
-        android.init()
-        android.map_key(android.KEYCODE_BACK, pygame.K_ESCAPE)
+  board = Board(5, 5)
+  boardui = pygameui.PyGameBoardUI(mainsurface, board, 1)
 
-    # Use a timer to control FPS.
-    pygame.time.set_timer(TIMEREVENT, 1000 / FPS)
+  while True:
+    boardui.draw()
+    if android and android.check_pause():
+      android.wait_for_resume()
 
-    # The color of the screen.
-    color = RED
+    # TODO pause for events rather than busywaiting
+    for event in pygame.event.get():
+      events.EVENTS[event.type](board, event)
 
-    while True:
+    pygame.display.update()
+    clock.tick(pygameui.FPS)
 
-        ev = pygame.event.wait()
 
-        # Android-specific:
-        if android:
-            if android.check_pause():
-                android.wait_for_resume()
-
-        # Draw the screen based on the timer.
-        if ev.type == TIMEREVENT:
-            screen.fill(color)
-            pygame.display.flip()
-
-        # When the touchscreen is pressed, change the color to green.
-        elif ev.type == pygame.MOUSEBUTTONDOWN:
-            color = GREEN
-
-        # When it's released, change the color to RED.
-        elif ev.type == pygame.MOUSEBUTTONUP:
-            color = RED
-
-        # When the user hits back, ESCAPE is sent. Handle it and end
-        # the game.
-        elif ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
-            break
-
-# This isn't run on Android.
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+  main()
