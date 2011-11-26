@@ -2,6 +2,7 @@ import pygame
 import sys
 
 NO_ACTION = lambda _state, _event: None
+
 class EventRegistry(dict):
 
   def __missing__(self, key):
@@ -10,7 +11,7 @@ class EventRegistry(dict):
   def category(self, event_type):
     def subCategory_(distinguisher):
       target = self.makeSubCategoryRegistry(event_type, distinguisher)
-      self[event_type] = lambda state, event: target[distinguisher(board, ev)]()
+      self[event_type] = lambda state, ev: target[distinguisher(state, ev)](state, ev)
       return target
     return subCategory_
 
@@ -24,6 +25,7 @@ class EventRegistry(dict):
     return handler_
   
 EVENTS = EventRegistry()
+
 @EVENTS.category(pygame.KEYDOWN)
 def KEYDOWN(_, ev):
   return ev.key
