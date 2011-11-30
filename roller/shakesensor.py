@@ -19,6 +19,7 @@ class ShakeSensor:
   threshold_distance = 5
   threshold_time = 1.0
   running_seconds = 5
+  settled = False
 
   def __init__(self):
     android.accelerometer_enable(True)
@@ -80,9 +81,13 @@ class ShakeSensor:
 	    snorm = Sample(0, snorm.x + s.x, snorm.y + s.y, snorm.z + s.z)
 	if sn > 0:
 	  snorm = Sample(0, snorm.x / sn, snorm.y / sn, snorm.z / sn)
+          if abs(snorm.r - self._normal.r) < 0.01:
+            self.settled = True 
 	  self._normal = snorm
 
   def postShakeEvent(self, overall, absolute):
-    ev = pygame.event.Event(self.SHAKE_EVENT, overall=overall, absolute=absolute)
+    ev = pygame.event.Event(self.SHAKE_EVENT,
+        overall=overall, absolute=absolute,
+        source=self)
     pygame.event.post(ev)
 
