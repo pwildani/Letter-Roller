@@ -113,6 +113,22 @@ class GarishTheme(Theme):
   FONTFILE = 'freesansbold.ttf'
   FONTRATIO = 2.0 / 3
 
+class GreyTheme(Theme):
+  GAP = 1
+  BORDERSIZE = 3
+
+  BGCOLOR = (0, 0, 0)
+  TILECOLOR = (240, 240, 240)
+  TILEBORDERCOLOR = (120, 120, 120)
+  TEXTCOLOR = (15, 15, 15)
+  BORDERCOLOR = LIGHTCYAN
+
+  BUTTONCOLOR = WHITE
+  BUTTONTEXTCOLOR = BLACK
+  MESSAGECOLOR = WHITE
+  FONTFILE = 'freesansbold.ttf'
+  FONTRATIO = 2.0 / 3
+
 
 class PyGameBoardUI:
   def __init__(self, surface, board, theme):

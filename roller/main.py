@@ -23,8 +23,9 @@ def main():
   pygame.display.set_caption('Letter Roller')
 
   game = board.Board(5, 5)
-  theme = pygameui.GarishTheme()
+  theme = pygameui.GreyTheme()
   boardui = pygameui.PyGameBoardUI(mainsurface, game, theme)
+  events.KEYDOWN.handler(pygame.K_SPACE)(lambda board, _: board.shakeit())
 
   while True:
     if android and android.check_pause():
@@ -32,7 +33,7 @@ def main():
 
     # TODO pause for events rather than busywaiting
     for event in itertools.chain([pygame.event.wait()], pygame.event.get()):
-      events.EVENTS[event.type](board, event)
+      events.EVENTS[event.type](game, event)
 
     boardui.draw()
     pygame.display.update()
