@@ -1,0 +1,5 @@
+title=Accelerometer Check
+author=Wildani
+api=1
+orientation=letter
+
