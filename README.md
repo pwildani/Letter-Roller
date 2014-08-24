@@ -10,4 +10,5 @@ A list of possible words is currently generated but not displayed.
 TODO:
 
 Add a timer
+
 Display wordlists after timer ends
